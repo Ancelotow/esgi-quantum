@@ -3,6 +3,12 @@ from qiskit import *
 import matplotlib.pyplot as plt
 from qiskit.visualization import *
 
+# Gardien G = Gardien de gauche
+# Gardien D = Gardien de droite
+
+GUARDIEN_LEFT = 0
+GUARDIEN_RIGHT = 1
+LIE = 2
 
 # Affichage du circuit quantique
 def display():
@@ -11,35 +17,46 @@ def display():
     plt.draw()
     plt.show()
 
+# Inversion des réponses des Gardiens par rapport a la ligne du mensonge
+def invert_watchers_answer(circ):
+    # Ajout d'une porte CNOT sur le Mensonge par rapport au Gardien D
+    circ.cx(LIE, GUARDIEN_RIGHT)
+    # Ajout d'une porte NOT sur le Mensonge
+    circ.x(LIE)
+    # Ajout d'une porte CNOT sur le Mensonge par rapport au Gardien G
+    circ.cx(LIE, GUARDIEN_LEFT)
+    # Ajout d'une porte NOT sur le Mensonge
+    circ.x(LIE)
+
 
 if __name__ == "__main__":
-    # Création du circuit quantique avec 2 qubits
+    # Création du circuit quantique avec 3 qubits (les 2 gardiens et le mensonge)
     circ = QuantumCircuit(3)
 
-    # Ajout d'une porte d'Hadamard
-    circ.h(0)
-
-    # Ajout d'une porte de contrôle
-    circ.cx(0, 1)
-
+    # Ajout d'une porte d'Hadamard sur le Gardien G
+    circ.h(GUARDIEN_LEFT)
+    # Ajout d'une porte CNOT sur la Gardien G par rapport au Gardien D
+    circ.cx(GUARDIEN_LEFT, GUARDIEN_RIGHT)
     # Ajout d'une porte d'Hadamard sur la ligne du mensonge
-    circ.h(2)
+    circ.h(LIE)
 
+    # Ajout d'une barrière
     circ.barrier()
-    circ.cx(2, 1)
-    circ.x(2)
-    circ.cx(2, 0)
-    circ.x(2)
+    # Inversion des réponses des Gardiens par rapport a la ligne du mensonge
+    invert_watchers_answer(circ)
 
+    # Ajout d'une barrière
     circ.barrier()
-    circ.swap(0, 1)
-    circ.x(0)
-    circ.x(1)
-    circ.cx(2, 1)
-    circ.x(2)
-    circ.cx(2, 0)
-    circ.x(2)
+    # Ajout d'une porte de Swap entre les deux Gardiens
+    circ.swap(GUARDIEN_LEFT, GUARDIEN_RIGHT)
+    # Ajout d'une porte NOT sur les deux Gardiens
+    circ.x(GUARDIEN_LEFT)
+    circ.x(GUARDIEN_RIGHT)
+    # Inversion des réponses des Gardiens par rapport a la ligne du mensonge
+    invert_watchers_answer(circ)
 
+    # Mesure des 3 qubits
     circ.measure_all()
+    # Affichage du circuit
     display()
 
